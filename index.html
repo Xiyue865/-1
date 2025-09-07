@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+  <title>经典扫雷游戏</title>
+  <style>
+    .cell {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .cell:hover {
+      background-color: #eee;
+    }
+
+    .mine {
+      background-color: red;
+    }
+
+    .flag {
+      color: blue;
+    }
+
+    .revealed {
+      background-color: #ddd;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 flex flex-col items-center justify-center h-screen">
+  <h1 class="text-3xl font-bold mb-4">经典扫雷游戏</h1>
+  <div id="board" class="grid grid-cols-10 gap-1"></div>
+  <div class="mt-4">
+    <button id="restart" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">重新开始</button>
+  </div>
+  <audio id="clickSound" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
+  <audio id="explosionSound" src="https://www.soundjay.com/explosion/explosion-01.wav" preload="auto"></audio>
+  <audio id="winSound" src="https://www.soundjay.com/human/applause-01.wav" preload="auto"></audio>
+  <script>
+    const rows = 10;
+    const cols = 10;
+    const mines = 15;
+    let board = [];
+    let gameOver = false;
+    let revealedCells = 0;
+    const boardElement = document.getElementById('board');
+    const restartButton = document.getElementById('restart');
+    const clickSound = document.getElementById('clickSound');
+    const explosionSound = document.getElementById('explosionSound');
+    const winSound = document.getElementById('winSound');
+
+    function createBoard() {
+      board = [];
+      for (let i = 0; i < rows; i++) {
+        board[i] = [];
+        for (let j = 0; j < cols; j++) {
+          board[i][j] = {
+            isMine: false,
+            isRevealed: false,
+            isFlagged: false,
+            adjacentMines: 0
+          };
+        }
+      }
+      let mineCount = 0;
+      while (mineCount < mines) {
+        const row = Math.floor(Math.random() * rows);
+        const col = Math.floor(Math.random() * cols);
+        if (!board[row][col].isMine) {
+          board[row][col].isMine = true;
+          mineCount++;
+        }
+      }
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (!board[i][j].isMine) {
+            board[i][j].adjacentMines = countAdjacentMines(i, j);
+          }
+        }
+      }
+    }
+
+    function countAdjacentMines(row, col) {
+      let count = 0;
+      for (let i = Math.max(row - 1, 0); i <= Math.min(row + 1, rows - 1); i++) {
+        for (let j = Math.max(col - 1, 0); j <= Math.min(col + 1, cols - 1); j++) {
+          if (board[i][j].isMine) {
+            count++;
+          }
+        }
+      }
+      return count;
+    }
+
+    function renderBoard() {
+      boardElement.innerHTML = '';
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const cell = document.createElement('div');
+          cell.classList.add('cell');
+          if (board[i][j].isRevealed) {
+            cell.classList.add('revealed');
+            if (board[i][j].isMine) {
+              cell.classList.add('mine');
+              cell.textContent = '💣';
+            } else if (board[i][j].adjacentMines > 0) {
+              cell.textContent = board[i][j].adjacentMines;
+            }
+          } else if (board[i][j].isFlagged) {
+            cell.classList.add('flag');
+            cell.textContent = '🚩';
+          }
+          cell.addEventListener('click', () => handleClick(i, j));
+          cell.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            handleRightClick(i, j);
+          });
+          boardElement.appendChild(cell);
+        }
+      }
+    }
+
+    function handleClick(row, col) {
+      if (gameOver || board[row][col].isRevealed || board[row][col].isFlagged) return;
+      clickSound.play();
+      if (board[row][col].isMine) {
+        explosionSound.play();
+        gameOver = true;
+        revealAllMines();
+      } else {
+        revealCell(row, col);
+        if (revealedCells === rows * cols - mines) {
+          winSound.play();
+          gameOver = true;
+        }
+      }
+      renderBoard();
+    }
+
+    function handleRightClick(row, col) {
+      if (gameOver || board[row][col].isRevealed) return;
+      clickSound.play();
+      board[row][col].isFlagged = !board[row][col].isFlagged;
+      renderBoard();
+    }
+
+    function revealCell(row, col) {
+      if (row < 0 || row >= rows || col < 0 || col >= cols || board[row][col].isRevealed || board[row][col].isFlagged) return;
+      board[row][col].isRevealed = true;
+      revealedCells++;
+      if (board[row][col].adjacentMines === 0) {
+        for (let i = Math.max(row - 1, 0); i <= Math.min(row + 1, rows - 1); i++) {
+          for (let j = Math.max(col - 1, 0); j <= Math.min(col + 1, cols - 1); j++) {
+            revealCell(i, j);
+          }
+        }
+      }
+    }
+
+    function revealAllMines() {
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (board[i][j].isMine) {
+            board[i][j].isRevealed = true;
+          }
+        }
+      }
+    }
+
+    function restartGame() {
+      gameOver = false;
+      revealedCells = 0;
+      createBoard();
+      renderBoard();
+    }
+
+    restartButton.addEventListener('click', restartGame);
+    restartGame();
+  </script>
+</body>
+
+</html>
+    
