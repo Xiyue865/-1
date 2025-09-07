@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>经典游戏合集</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36D399',
+                        danger: '#F87272',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .btn-primary {
+                @apply bg-primary text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50 active:scale-95;
+            }
+            .btn-secondary {
+                @apply bg-white text-primary border border-primary px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:bg-primary/5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/30 active:scale-95;
+            }
+            .input-field {
+                @apply w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all duration-300;
+            }
+            .game-container {
+                @apply max-w-4xl mx-auto p-4 bg-white rounded-xl shadow-lg;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gradient-to-br from-light to-gray-100 min-h-screen text-dark">
+    <!-- 页面加载动画 -->
+    <div id="loader" class="fixed inset-0 flex items-center justify-center bg-white z-50 transition-opacity duration-500">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-primary font-medium">加载中...</p>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div id="app" class="opacity-0 transition-opacity duration-500">
+        <!-- 导航栏 -->
+        <nav id="navbar" class="fixed w-full bg-white/80 backdrop-blur-md shadow-sm z-40 transition-all duration-300">
+            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-gamepad text-primary text-2xl"></i>
+                    <h1 class="text-xl font-bold text-primary">经典游戏合集</h1>
+                </div>
+                
+                <div id="nav-links" class="hidden md:flex items-center space-x-8">
+                    <a href="#" id="home-link" class="font-medium hover:text-primary transition-colors">首页</a>
+                    <a href="#" id="minesweeper-link" class="font-medium hover:text-primary transition-colors">扫雷</a>
+                    <a href="#" id="solitaire-link" class="font-medium hover:text-primary transition-colors">纸牌</a>
+                    <button id="logout-btn" class="btn-secondary hidden">
+                        <i class="fa fa-sign-out mr-2"></i>退出登录
+                    </button>
+                </div>
+                
+                <button id="mobile-menu-btn" class="md:hidden text-dark text-xl">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            
+            <!-- 移动端菜单 -->
+            <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
+                <div class="container mx-auto px-4 py-3 flex flex-col space-y-4">
+                    <a href="#" id="mobile-home" class="font-medium hover:text-primary transition-colors py-2">首页</a>
+                    <a href="#" id="mobile-minesweeper" class="font-medium hover:text-primary transition-colors py-2">扫雷</a>
+                    <a href="#" id="mobile-solitaire" class="font-medium hover:text-primary transition-colors py-2">纸牌</a>
+                    <button id="mobile-logout" class="btn-secondary w-full hidden">
+                        <i class="fa fa-sign-out mr-2"></i>退出登录
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主要内容区域 -->
+        <main class="container mx-auto px-4 pt-24 pb-16">
+            <!-- 登录/注册界面 -->
+            <section id="auth-section" class="max-w-md mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <div class="p-8">
+                        <div class="text-center mb-8">
+                            <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-dark mb-2">欢迎回来</h2>
+                            <p class="text-gray-500">请登录或注册以继续</p>
+                        </div>
+                        
+                        <!-- 登录表单 -->
+                        <div id="login-form">
+                            <div class="mb-4">
+                                <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+                                <input type="email" id="login-email" class="input-field" placeholder="your@email.com" required>
+                            </div>
+                            <div class="mb-6">
+                                <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                                <input type="password" id="login-password" class="input-field" placeholder="••••••••" required>
+                            </div>
+                            <button id="login-btn" class="btn-primary w-full mb-4">
+                                <i class="fa fa-sign-in mr-2"></i>登录
+                            </button>
+                            <p class="text-center text-gray-500">
+                                还没有账号？ <span id="show-register" class="text-primary cursor-pointer hover:underline">立即注册</span>
+                            </p>
+                        </div>
+                        
+                        <!-- 注册表单 -->
+                        <div id="register-form" class="hidden">
+                            <div class="mb-4">
+                                <label for="register-name" class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                                <input type="text" id="register-name" class="input-field" placeholder="请输入用户名" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="register-email" class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+                                <input type="email" id="register-email" class="input-field" placeholder="your@email.com" required>
+                            </div>
+                            <div class="mb-6">
+                                <label for="register-password" class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                                <input type="password" id="register-password" class="input-field" placeholder="至少8位字符" minlength="8" required>
+                            </div>
+                            <button id="register-btn" class="btn-primary w-full mb-4">
+                                <i class="fa fa-user-plus mr-2"></i>注册
+                            </button>
+                            <p class="text-center text-gray-500">
+                                已有账号？ <span id="show-login" class="text-primary cursor-pointer hover:underline">立即登录</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 首页/游戏选择界面 -->
+            <section id="home-section" class="hidden">
+                <div class="text-center mb-12">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-4 text-shadow">选择游戏</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">从经典游戏中选择一款开始游玩，记录你的最佳成绩！</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <!-- 扫雷游戏卡片 -->
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" id="minesweeper-card">
+                        <div class="h-48 overflow-hidden">
+                            <img src="https://picsum.photos/seed/minesweeper/600/400" alt="扫雷游戏预览" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-xl font-bold">扫雷</h3>
+                                <span class="bg-primary/10 text-primary text-sm px-3 py-1 rounded-full">经典</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">挑战你的逻辑思维和反应能力，找出所有地雷而不触发它们。</p>
+                            <button class="btn-primary w-full" id="start-minesweeper">
+                                <i class="fa fa-play mr-2"></i>开始游戏
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 纸牌游戏卡片 -->
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover" id="solitaire-card">
+                        <div class="h-48 overflow-hidden">
+                            <img src="https://picsum.photos/seed/solitaire/600/400" alt="纸牌游戏预览" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-xl font-bold">纸牌</h3>
+                                <span class="bg-primary/10 text-primary text-sm px-3 py-1 rounded-full">经典</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">考验你的策略和耐心，按照规则将所有牌按顺序排列。</p>
+                            <button class="btn-primary w-full" id="start-solitaire">
+                                <i class="fa fa-play mr-2"></i>开始游戏
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 游戏统计 -->
+                <div class="mt-16 max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold mb-6 text-center">我的游戏统计</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
+                                <i class="fa fa-bomb text-danger mr-2"></i>扫雷记录
+                            </h4>
+                            <div id="minesweeper-stats" class="space-y-2 text-gray-600">
+                                <p>初级: <span class="font-medium">--:--</span></p>
+                                <p>中级: <span class="font-medium">--:--</span></p>
+                                <p>高级: <span class="font-medium">--:--</span></p>
+                            </div>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
+                                <i class="fa fa-club text-dark mr-2"></i>纸牌记录
+                            </h4>
+                            <div id="solitaire-stats" class="space-y-2 text-gray-600">
+                                <p>最少步数: <span class="font-medium">--</span></p>
+                                <p>最短时间: <span class="font-medium">--:--</span></p>
+                                <p>获胜次数: <span class="font-medium">0</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 扫雷游戏界面 -->
+            <section id="minesweeper-section" class="hidden">
+                <div class="game-container">
+                    <div class="flex justify-between items-center mb-6">
+                        <button id="back-from-minesweeper" class="btn-secondary">
+                            <i class="fa fa-arrow-left mr-2"></i>返回
+                        </button>
+                        <div class="text-center">
+                            <h2 class="text-2xl font-bold mb-1">扫雷</h2>
+                            <p class="text-gray-500 text-sm">找出所有地雷，不要引爆它们</p>
+                        </div>
+                        <button id="restart-minesweeper" class="btn-secondary">
+                            <i class="fa fa-refresh mr-2"></i>重置
+                        </button>
+                    </div>
+                    
+                    <!-- 游戏控制区 -->
+                    <div class="flex justify-between items-center mb-6 p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center">
+                            <span class="text-sm text-gray-600 mr-2">难度:</span>
+                            <select id="minesweeper-difficulty" class="bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                <option value="easy">初级 (9×9, 10雷)</option>
+                                <option value="medium">中级 (16×16, 40雷)</option>
+                                <option value="hard">高级 (16×30, 99雷)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center bg-dark text-white px-3 py-2 rounded-md">
+                                <i class="fa fa-bomb mr-2"></i>
+                                <span id="mines-count">10</span>
+                            </div>
+                            <div class="flex items-center bg-dark text-white px-3 py-2 rounded-md">
+                                <i class="fa fa-clock-o mr-2"></i>
+                                <span id="minesweeper-timer">00:00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 扫雷游戏棋盘 -->
+                    <div class="flex justify-center mb-6">
+                        <div id="minesweeper-board" class="grid gap-1 bg-gray-300 p-2 rounded-md"></div>
+                    </div>
+                    
+                    <!-- 游戏信息 -->
+                    <div class="text-center text-gray-600 text-sm">
+                        <p>左键点击: 揭示格子 | 右键点击: 标记地雷</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 纸牌游戏界面 -->
+            <section id="solitaire-section" class="hidden">
+                <div class="game-container">
+                    <div class="flex justify-between items-center mb-6">
+                        <button id="back-from-solitaire" class="btn-secondary">
+                            <i class="fa fa-arrow-left mr-2"></i>返回
+                        </button>
+                        <div class="text-center">
+                            <h2 class="text-2xl font-bold mb-1">纸牌</h2>
+                            <p class="text-gray-500 text-sm">将所有牌按花色从A到K排列</p>
+                        </div>
+                        <button id="restart-solitaire" class="btn-secondary">
+                            <i class="fa fa-refresh mr-2"></i>重置
+                        </button>
+                    </div>
+                    
+                    <!-- 游戏控制区 -->
+                    <div class="flex justify-between items-center mb-6 p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center bg-dark text-white px-3 py-2 rounded-md">
+                                <i class="fa fa-clock-o mr-2"></i>
+                                <span id="solitaire-timer">00:00</span>
+                            </div>
+                            <div class="flex items-center bg-dark text-white px-3 py-2 rounded-md">
+                                <i class="fa fa-steps mr-2"></i>
+                                <span id="solitaire-moves">0</span>
+                                <span class="ml-1 text-xs">步</span>
+                            </div>
+                        </div>
+                        <button id="hint-solitaire" class="btn-secondary">
+                            <i class="fa fa-lightbulb-o mr-2"></i>提示
+                        </button>
+                    </div>
+                    
+                    <!-- 纸牌游戏区域 -->
+                    <div id="solitaire-board" class="w-full">
+                        <!-- 牌堆区域 -->
+                        <div class="flex justify-between mb-8">
+                            <div class="flex space-x-4">
+                                <!-- 待发牌堆 -->
+                                <div id="stock-pile" class="w-16 h-24 bg-gray-200 rounded-md border-2 border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
+                                    <i class="fa fa-question text-gray-500 text-2xl"></i>
+                                </div>
+                                
+                                <!-- 已发牌堆 -->
+                                <div id="waste-pile" class="w-16 h-24 bg-gray-200 rounded-md border-2 border-gray-300"></div>
+                            </div>
+                            
+                            <!-- 目标堆 (4个) -->
+                            <div class="flex space-x-4">
+                                <div class="foundation-pile w-16 h-24 bg-gray-200 rounded-md border-2 border-dashed border-gray-400"></div>
+                                <div class="foundation-pile w-16 h-24 bg-gray-200 rounded-md border-2 border-dashed border-gray-400"></div>
+                                <div class="foundation-pile w-16 h-24 bg-gray-200 rounded-md border-2 border-dashed border-gray-400"></div>
+                                <div class="foundation-pile w-16 h-24 bg-gray-200 rounded-md border-2 border-dashed border-gray-400"></div>
+                            </div>
+                        </div>
+                        
+                        <!--  tableau 区域 (7列) -->
+                        <div id="tableau" class="flex justify-between">
+                            <!-- 7列牌将通过JS动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- 页脚 -->
+        <footer class="bg-dark text-white py-8">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                        <i class="fa fa-gamepad text-primary text-2xl"></i>
+                        <span class="text-xl font-bold">经典游戏合集</span>
+                    </div>
+                    <div class="text-gray-400 text-sm">
+                        &copy; 2023 经典游戏合集 | 用现代技术重现经典游戏体验
+                    </div>
+                </div>
+            </div>
+        </footer>
+        
+        <!-- 游戏结束弹窗 -->
+        <div id="game-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="modal-content">
+                <div class="p-6 text-center">
+                    <div id="modal-icon" class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl"></div>
+                    <h3 id="modal-title" class="text-2xl font-bold mb-2"></h3>
+                    <p id="modal-message" class="text-gray-600 mb-6"></p>
+                    <div class="flex space-x-3 justify-center">
+                        <button id="modal-close" class="btn-secondary">
+                            返回主页
+                        </button>
+                        <button id="modal-restart" class="btn-primary">
+                            再玩一次
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局状态管理
+        const state = {
+            currentUser: null,
+            currentView: 'auth', // auth, home, minesweeper, solitaire
+            gameStats: {
+                minesweeper: {
+                    easy: null,
+                    medium: null,
+                    hard: null
+                },
+                solitaire: {
+                    minMoves: null,
+                    minTime: null,
+                    wins: 0
+                }
+            },
+            // 游戏状态
+            minesweeper: {
+                board: [],
+                mines: [],
+                revealed: [],
+                flagged: [],
+                gameStarted: false,
+                gameOver: false,
+                win: false,
+                timer: null,
+                seconds: 0,
+                difficulty: 'easy',
+                sizes: {
+                    easy: { rows: 9, cols: 9, mines: 10 },
+                    medium: { rows: 16, cols: 16, mines: 40 },
+                    hard: { rows: 16, cols: 30, mines: 99 }
+                }
+            },
+            solitaire: {
+                deck: [],
+                stockPile: [],
+                wastePile: [],
+                foundationPiles: [[], [], [], []],
+                tableauPiles: [[], [], [], [], [], [], []],
+                gameStarted: false,
+                gameOver: false,
+                win: false,
+                timer: null,
+                seconds: 0,
+                moves: 0,
+                selectedCard: null
+            }
+        };
+
+        // DOM 元素
+        const elements = {
+            // 主容器
+            app: document.getElementById('app'),
+            loader: document.getElementById('loader'),
+            navbar: document.getElementById('navbar'),
+            
+            // 导航链接
+            navLinks: {
+                home: document.getElementById('home-link'),
+                minesweeper: document.getElementById('minesweeper-link'),
+                solitaire: document.getElementById('solitaire-link'),
+                logout: document.getElementById('logout-btn'),
+                mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+                mobileMenu: document.getElementById('mobile-menu'),
+                mobileHome: document.getElementById('mobile-home'),
+                mobileMinesweeper: document.getElementById('mobile-minesweeper'),
+                mobileSolitaire: document.getElementById('mobile-solitaire'),
+                mobileLogout: document.getElementById('mobile-logout')
+            },
+            
+            // 视图区域
+            sections: {
+                auth: document.getElementById('auth-section'),
+                home: document.getElementById('home-section'),
+                minesweeper: document.getElementById('minesweeper-section'),
+                solitaire: document.getElementById('solitaire-section')
+            },
+            
+            // 登录/注册表单
+            auth: {
+                loginForm: document.getElementById('login-form'),
+                registerForm: document.getElementById('register-form'),
+                showRegister: document.getElementById('show-register'),
+                showLogin: document.getElementById('show-login'),
+                loginBtn: document.getElementById('login-btn'),
+                registerBtn: document.getElementById('register-btn'),
+                loginEmail: document.getElementById('login-email'),
+                loginPassword: document.getElementById('login-password'),
+                registerName: document.getElementById('register-name'),
+                registerEmail: document.getElementById('register-email'),
+                registerPassword: document.getElementById('register-password')
+            },
+            
+            // 首页元素
+            home: {
+                startMinesweeper: document.getElementById('start-minesweeper'),
+                startSolitaire: document.getElementById('start-solitaire'),
+                minesweeperStats: document.getElementById('minesweeper-stats'),
+                solitaireStats: document.getElementById('solitaire-stats')
+            },
+            
+            // 扫雷游戏元素
+            minesweeper: {
+                board: document.getElementById('minesweeper-board'),
+                backBtn: document.getElementById('back-from-minesweeper'),
+                restartBtn: document.getElementById('restart-minesweeper'),
+                difficultySelect: document.getElementById('minesweeper-difficulty'),
+                minesCount: document.getElementById('mines-count'),
+                timer: document.getElementById('minesweeper-timer')
+            },
+            
+            // 纸牌游戏元素
+            solitaire: {
+                board: document.getElementById('solitaire-board'),
+                backBtn: document.getElementById('back-from-solitaire'),
+                restartBtn: document.getElementById('restart-solitaire'),
+                hintBtn: document.getElementById('hint-solitaire'),
+                timer: document.getElementById('solitaire-timer'),
+                moves: document.getElementById('solitaire-moves'),
+                stockPile: document.getElementById('stock-pile'),
+                wastePile: document.getElementById('waste-pile'),
+                foundationPiles: document.querySelectorAll('.foundation-pile'),
+                tableau: document.getElementById('tableau')
+            },
+            
+            // 游戏弹窗
+            modal: {
+                container: document.getElementById('game-modal'),
+                content: document.getElementById('modal-content'),
+                icon: document.getElementById('modal-icon'),
+                title: document.getElementById('modal-title'),
+                message: document.getElementById('modal-message'),
+                closeBtn: document.getElementById('modal-close'),
+                restartBtn: document.getElementById('modal-restart')
+            }
+        };
+
+        // 工具函数
+        const utils = {
+            // 格式化时间 (秒 -> mm:ss)
+            formatTime: (seconds) => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            },
+            
+            // 显示消息提示
+            showToast: (message, type = 'info') => {
+                // 检查是否已有toast
+                let toast = document.querySelector('.toast-notification');
+                if (toast) {
+                    toast.remove();
+                }
+                
+                // 创建新toast
+                toast = document.createElement('div');
+                toast.className = `toast-notification fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-y-10 opacity-0`;
+                
+                // 设置样式
+                let bgColor, textColor, icon;
+                switch (type) {
+                    case 'success':
+                        bgColor = 'bg-secondary';
+                        textColor = 'text-white';
+                        icon = 'fa-check-circle';
+                        break;
+                    case 'error':
+                        bgColor = 'bg-danger';
+                        textColor = 'text-white';
+                        icon = 'fa-times-circle';
+                        break;
+                    default:
+                        bgColor = 'bg-primary';
+                        textColor = 'text-white';
+                        icon = 'fa-info-circle';
+                }
+                
+                toast.classList.add(bgColor, textColor);
+                toast.innerHTML = `<i class="fa ${icon} mr-2"></i>${message}`;
+                document.body.appendChild(toast);
+                
+                // 显示动画
+                setTimeout(() => {
+                    toast.classList.remove('translate-y-10', 'opacity-0');
+                }, 10);
+                
+                // 自动消失
+                setTimeout(() => {
+                    toast.classList.add('translate-y-10', 'opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            },
+            
+            // 显示游戏结束弹窗
+            showGameModal: (title, message, isWin, gameType) => {
+                elements.modal.title.textContent = title;
+                elements.modal.message.textContent = message;
+                elements.modal.container.classList.remove('hidden');
+                
+                // 设置图标
+                if (isWin) {
+                    elements.modal.icon.className = 'w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl bg-secondary text-white';
+                    elements.modal.icon.innerHTML = '<i class="fa fa-trophy"></i>';
+                } else {
+                    elements.modal.icon.className = 'w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl bg-danger text-white';
+                    elements.modal.icon.innerHTML = '<i class="fa fa-times"></i>';
+                }
+                
+                // 保存当前游戏类型，用于重启按钮
+                elements.modal.restartBtn.dataset.game = gameType;
+                
+                // 显示动画
+                setTimeout(() => {
+                    elements.modal.content.classList.remove('scale-95', 'opacity-0');
+                    elements.modal.content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            },
+            
+            // 隐藏游戏结束弹窗
+            hideGameModal: () => {
+                elements.modal.content.classList.remove('scale-100', 'opacity-100');
+                elements.modal.content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    elements.modal.container.classList.add('hidden');
+                }, 300);
+            },
+            
+            // 切换视图
+            switchView: (viewName) => {
+                // 隐藏所有视图
+                Object.values(elements.sections).forEach(section => {
+                    section.classList.add('hidden');
+                });
+                
+                // 显示目标视图
+                elements.sections[viewName].classList.remove('hidden');
+                state.currentView = viewName;
+                
+                // 更新导航栏状态
+                if (viewName === 'auth') {
+                    elements.navLinks.logout.classList.add('hidden');
+                    elements.navLinks.mobileLogout.classList.add('hidden');
+                } else {
+                    elements.navLinks.logout.classList.remove('hidden');
+                    elements.navLinks.mobileLogout.classList.remove('hidden');
+                }
+                
+                // 关闭移动菜单
+                elements.navLinks.mobileMenu.classList.add('hidden');
+                
+                // 如果切换到游戏视图，初始化游戏
+                if (viewName === 'minesweeper' && !state.minesweeper.gameStarted) {
+                    minesweeper.init();
+                } else if (viewName === 'solitaire' && !state.solitaire.gameStarted) {
+                    solitaire.init();
+                }
+                
+                // 滚动到顶部
+                window.scrollTo(0, 0);
+            },
+            
+            // 保存用户数据到本地存储
+            saveUserData: () => {
+                localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+                localStorage.setItem('gameStats', JSON.stringify(state.gameStats));
+            },
+            
+            // 从本地存储加载用户数据
+            loadUserData: () => {
+                const savedUser = localStorage.getItem('currentUser');
+                const savedStats = localStorage.getItem('gameStats');
+                
+                if (savedUser) {
+                    state.currentUser = JSON.parse(savedUser);
+                }
+                
+                if (savedStats) {
+                    state.gameStats = JSON.parse(savedStats);
+                }
+                
+                // 如果有登录用户，直接进入首页
+                if (state.currentUser) {
+                    utils.switchView('home');
+                    home.updateStats();
+                }
+            },
+            
+            // 检查元素是否有指定类
+            hasClass: (element, className) => {
+                return element.classList.contains(className);
+            },
+            
+            // 为元素添加类
+            addClass: (element, className) => {
+                element.classList.add(className);
+            },
+            
+            // 为元素移除类
+            removeClass: (element, className) => {
+                element.classList.remove(className);
+            }
+        };
+
+        // 登录注册功能
+        const auth = {
+            // 初始化
+            init: () => {
+                // 绑定事件
+                elements.auth.showRegister.addEventListener('click', () => {
+                    elements.auth.loginForm.classList.add('hidden');
+                    elements.auth.registerForm.classList.remove('hidden');
+                });
+                
+                elements.auth.showLogin.addEventListener('click', () => {
+                    elements.auth.registerForm.classList.add('hidden');
+                    elements.auth.loginForm.classList.remove('hidden');
+                });
+                
+                elements.auth.loginBtn.addEventListener('click', auth.login);
+                elements.auth.registerBtn.addEventListener('click', auth.register);
+                
+                // 回车键提交表单
+                elements.auth.loginEmail.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') auth.login();
+                });
+                elements.auth.loginPassword.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') auth.login();
+                });
+                elements.auth.registerEmail.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') auth.register();
+                });
+                elements.auth.registerPassword.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') auth.register();
+                });
+            },
+            
+            // 登录
+            login: () => {
+                const email = elements.auth.loginEmail.value.trim();
+                const password = elements.auth.loginPassword.value.trim();
+                
+                // 简单验证
+                if (!email || !password) {
+                    utils.showToast('请输入邮箱和密码', 'error');
+                    return;
+                }
+                
+                // 在实际应用中，这里应该发送请求到服务器
+                // 这里仅做本地验证
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    state.currentUser = user;
+                    utils.saveUserData();
+                    utils.showToast(`欢迎回来，${user.name}!`, 'success');
+                    utils.switchView('home');
+                    home.updateStats();
+                    
+                    // 清空表单
+                    elements.auth.loginEmail.value = '';
+                    elements.auth.loginPassword.value = '';
+                } else {
+                    utils.showToast('邮箱或密码错误', 'error');
+                }
+            },
+            
+            // 注册
+            register: () => {
+                const name = elements.auth.registerName.value.trim();
+                const email = elements.auth.registerEmail.value.trim();
+                const password = elements.auth.registerPassword.value.trim();
+                
+                // 简单验证
+                if (!name || !email || !password) {
+                    utils.showToast('请填写所有字段', 'error');
+                    return;
+                }
+                
+                if (password.length < 8) {
+                    utils.showToast('密码长度至少8位', 'error');
+                    return;
+                }
+                
+                // 验证邮箱格式
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    utils.showToast('请输入有效的邮箱地址', 'error');
+                    return;
+                }
+                
+                // 在实际应用中，这里应该发送请求到服务器
+                // 这里仅做本地存储
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const userExists = users.some(u => u.email === email);
+                
+                if (userExists) {
+                    utils.showToast('该邮箱已被注册', 'error');
+                    return;
+                }
+                
+                // 创建新用户
+                const newUser = {
+                    id: Date.now().toString(),
+                    name,
+                    email,
+                    password
+                };
+                
+                users.push(newUser);
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                // 自动登录
+                state.currentUser = newUser;
+                utils.saveUserData();
+                
+                utils.showToast('注册成功！', 'success');
+                utils.switchView('home');
+                
+                // 清空表单
+                elements.auth.registerName.value = '';
+                elements.auth.registerEmail.value = '';
+                elements.auth.registerPassword.value = '';
+            },
+            
+            // 登出
+            logout: () => {
+                state.currentUser = null;
+                utils.saveUserData();
+                utils.showToast('已成功登出', 'info');
+                utils.switchView('auth');
+            }
+        };
+
+        // 首页功能
+        const home = {
+            // 初始化
+            init: () => {
+                // 绑定事件
+                elements.home.startMinesweeper.addEventListener('click', () => {
+                    utils.switchView('minesweeper');
+                });
+                
+                elements.home.startSolitaire.addEventListener('click', () => {
+                    utils.switchView('solitaire');
+                });
+                
+                // 更新统计数据
+                home.updateStats();
+            },
+            
+            // 更新统计数据
+            updateStats: () => {
+                // 更新扫雷统计
+                const msStats = state.gameStats.minesweeper;
+                elements.home.minesweeperStats.innerHTML = `
+                    <p>初级: <span class="font-medium">${msStats.easy ? utils.formatTime(msStats.easy) : '--:--'}</span></p>
+                    <p>中级: <span class="font-medium">${msStats.medium ? utils.formatTime(msStats.medium) : '--:--'}</span></p>
+                    <p>高级: <span class="font-medium">${msStats.hard ? utils.formatTime(msStats.hard) : '--:--'}</span></p>
+                `;
+                
+                // 更新纸牌统计
+                const sStats = state.gameStats.solitaire;
+                elements.home.solitaireStats.innerHTML = `
+                    <p>最少步数: <span class="font-medium">${sStats.minMoves || '--'}</span></p>
+                    <p>最短时间: <span class="font-medium">${sStats.minTime ? utils.formatTime(sStats.minTime) : '--:--'}</span></p>
+                    <p>获胜次数: <span class="font-medium">${sStats.wins}</span></p>
+                `;
+            }
+        };
+
+        // 扫雷游戏功能
+        const minesweeper = {
+            // 初始化游戏
+            init: () => {
+                // 重置游戏状态
+                state.minesweeper = {
+                    ...state.minesweeper,
+                    board: [],
+                    mines: [],
+                    revealed: [],
+                    flagged: [],
+                    gameStarted: false,
+                    gameOver: false,
+                    win: false,
+                    timer: null,
+                    seconds: 0
+                };
+                
+                // 更新难度
+                const difficulty = state.minesweeper.difficulty;
+                elements.minesweeper.difficultySelect.value = difficulty;
+                
+                // 更新地雷计数
+                const { mines } = state.minesweeper.sizes[difficulty];
+                elements.minesweeper.minesCount.textContent = mines;
+                
+                // 重置计时器显示
+                elements.minesweeper.timer.textContent = '00:00';
+                
+                // 创建棋盘
+                minesweeper.createBoard();
+            },
+            
+            // 创建棋盘
+            createBoard: () => {
+                const { rows, cols } = state.minesweeper.sizes[state.minesweeper.difficulty];
+                const boardElement = elements.minesweeper.board;
+                
+                // 清空棋盘
+                boardElement.innerHTML = '';
+                
+                // 设置网格尺寸
+                boardElement.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
+                
+                // 初始化游戏状态数组
+                state.minesweeper.board = Array(rows).fill().map(() => Array(cols).fill(0));
+                state.minesweeper.revealed = Array(rows).fill().map(() => Array(cols).fill(false));
+                state.minesweeper.flagged = Array(rows).fill().map(() => Array(cols).fill(false));
+                
+                // 创建单元格
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'w-30 h-30 bg-gray-400 hover:bg-gray-300 transition-colors flex items-center justify-center cursor-pointer text-sm font-bold select-none';
+                        cell.dataset.row = i;
+                        cell.dataset.col = j;
+                        
+                        // 绑定点击事件
+                        cell.addEventListener('click', () => minesweeper.revealCell(i, j));
+                        cell.addEventListener('contextmenu', (e) => {
+                            e.preventDefault();
+                            minesweeper.toggleFlag(i, j);
+                        });
+                        
+                        boardElement.appendChild(cell);
+                    }
+                }
+            },
+            
+            // 放置地雷
+            placeMines: (firstRow, firstCol) => {
+                const { rows, cols, mines } = state.minesweeper.sizes[state.minesweeper.difficulty];
+                let minesPlaced = 0;
+                
+                // 确保首次点击不是地雷，并且周围也没有地雷
+                const safeZone = [];
+                for (let i = Math.max(0, firstRow - 1); i <= Math.min(rows - 1, firstRow + 1); i++) {
+                    for (let j = Math.max(0, firstCol - 1); j <= Math.min(cols - 1, firstCol + 1); j++) {
+                        safeZone.push(`${i},${j}`);
+                    }
+                }
+                
+                // 随机放置地雷
+                while (minesPlaced < mines) {
+                    const row = Math.floor(Math.random() * rows);
+                    const col = Math.floor(Math.random() * cols);
+                    
+                    // 检查是否已经放置地雷或在安全区
+                    if (!state.minesweeper.mines.includes(`${row},${col}`) && !safeZone.includes(`${row},${col}`)) {
+                        state.minesweeper.mines.push(`${row},${col}`);
+                        state.minesweeper.board[row][col] = 'M';
+                        minesPlaced++;
+                        
+                        // 更新周围单元格的数字
+                        minesweeper.updateNumbers(row, col);
+                    }
+                }
+            },
+            
+            // 更新周围单元格的数字
+            updateNumbers: (row, col) => {
+                const { rows, cols } = state.minesweeper.sizes[state.minesweeper.difficulty];
+                
+                // 检查周围8个方向
+                for (let i = Math.max(0, row - 1); i <= Math.min(rows - 1, row + 1); i++) {
+                    for (let j = Math.max(0, col - 1); j <= Math.min(cols - 1, col + 1); j++) {
+                        // 跳过地雷本身
+                        if (i === row && j === col) continue;
+                        
+                        // 如果不是地雷，增加计数
+                        if (state.minesweeper.board[i][j] !== 'M') {
+                            state.minesweeper.board[i][j]++;
+                        }
+                    }
+                }
+            },
+            
+            // 揭示单元格
+            revealCell: (row, col) => {
+                // 如果游戏结束或已揭示或已标记，返回
+                if (state.minesweeper.gameOver || 
+                    state.minesweeper.revealed[row][col] || 
+                    state.minesweeper.flagged[row][col]) {
+                    return;
+                }
+                
+                // 首次点击，开始游戏并放置地雷
+                if (!state.minesweeper.gameStarted) {
+                    state.minesweeper.gameStarted = true;
+                    minesweeper.placeMines(row, col);
+                    minesweeper.startTimer();
+                }
+                
+                const cell = elements.minesweeper.board.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                
+                // 标记为已揭示
+                state.minesweeper.revealed[row][col] = true;
+                utils.removeClass(cell, 'bg-gray-400 hover:bg-gray-300');
+                utils.addClass(cell, 'bg-gray-200 cursor-default');
+                
+                // 如果是地雷，游戏结束
+                if (state.minesweeper.board[row][col] === 'M') {
+                    cell.innerHTML = '<i class="fa fa-bomb text-danger"></i>';
+                    minesweeper.gameOver(false);
+                    return;
+                }
+                
+                // 显示数字
+                const count = state.minesweeper.board[row][col];
+                if (count > 0) {
+                    // 根据数字设置不同颜色
+                    const colors = ['', 'blue', 'green', 'red', 'purple', 'maroon', 'teal', 'black', 'gray'];
+                    cell.textContent = count;
+                    cell.style.color = colors[count];
+                } else {
+                    // 如果是0，递归揭示周围单元格
+                    minesweeper.revealEmptyCells(row, col);
+                }
+                
+                // 检查是否获胜
+                minesweeper.checkWin();
+            },
+            
+            // 揭示空白单元格周围的单元格
+            revealEmptyCells: (row, col) => {
+                const { rows, cols } = state.minesweeper.sizes[state.minesweeper.difficulty];
+                
+                // 检查周围8个方向
+                for (let i = Math.max(0, row - 1); i <= Math.min(rows - 1, row + 1); i++) {
+                    for (let j = Math.max(0, col - 1); j <= Math.min(cols - 1, col + 1); j++) {
+                        // 跳过自身
+                        if (i === row && j === col) continue;
+                        
+                        // 如果未揭示且未标记，揭示它
+                        if (!state.minesweeper.revealed[i][j] && !state.minesweeper.flagged[i][j]) {
+                            minesweeper.revealCell(i, j);
+                        }
+                    }
+                }
+            },
+            
+            // 切换标记
+            toggleFlag: (row, col) => {
+                // 如果游戏结束或已揭示，返回
+                if (state.minesweeper.gameOver || state.minesweeper.revealed[row][col]) {
+                    return;
+                }
+                
+                // 首次点击，开始计时但不放置地雷
+                if (!state.minesweeper.gameStarted) {
+                    state.minesweeper.gameStarted = true;
+                    minesweeper.startTimer();
+                }
+                
+                const cell = elements.minesweeper.board.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                
+                // 切换标记状态
+                state.minesweeper.flagged[row][col] = !state.minesweeper.flagged[row][col];
+                
+                if (state.minesweeper.flagged[row][col]) {
+                    cell.innerHTML = '<i class="fa fa-flag text-red-600"></i>';
+                    // 更新地雷计数
+                    elements.minesweeper.minesCount.textContent = 
+                        parseInt(elements.minesweeper.minesCount.textContent) - 1;
+                } else {
+                    cell.innerHTML = '';
+                    // 更新地雷计数
+                    elements.minesweeper.minesCount.textContent = 
+                        parseInt(elements.minesweeper.minesCount.textContent) + 1;
+                }
+                
+                // 检查是否获胜
+                minesweeper.checkWin();
+            },
+            
+            // 开始计时器
+            startTimer: () => {
+                // 清除现有计时器
+                if (state.minesweeper.timer) {
+                    clearInterval(state.minesweeper.timer);
+                }
+                
+                // 设置新计时器
+                state.minesweeper.timer = setInterval(() => {
+                    state.minesweeper.seconds++;
+                    elements.minesweeper.timer.textContent = utils.formatTime(state.minesweeper.seconds);
+                }, 1000);
+            },
+            
+            // 停止计时器
+            stopTimer: () => {
+                if (state.minesweeper.timer) {
+                    clearInterval(state.minesweeper.timer);
+                    state.minesweeper.timer = null;
+                }
+            },
+            
+            // 检查是否获胜
+            checkWin: () => {
+                const { rows, cols, mines } = state.minesweeper.sizes[state.minesweeper.difficulty];
+                let revealedCount = 0;
+                let correctlyFlagged = 0;
+                
+                // 计算已揭示的非地雷单元格数量和正确标记的地雷数量
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        if (state.minesweeper.revealed[i][j] && state.minesweeper.board[i][j] !== 'M') {
+                            revealedCount++;
+                        }
+                        
+                        if (state.minesweeper.flagged[i][j] && state.minesweeper.board[i][j] === 'M') {
+                            correctlyFlagged++;
+                        }
+                    }
+                }
+                
+                // 获胜条件：所有非地雷单元格都被揭示 或 所有地雷都被正确标记
+                const totalNonMines = rows * cols - mines;
+                if (revealedCount === totalNonMines || correctlyFlagged === mines) {
+                    minesweeper.gameOver(true);
+                }
+            },
+            
+            // 游戏结束
+            gameOver: (isWin) => {
+                state.minesweeper.gameOver = true;
+                state.minesweeper.win = isWin;
+                minesweeper.stopTimer();
+                
+                const { rows, cols } = state.minesweeper.sizes[state.minesweeper.difficulty];
+                
+                if (isWin) {
+                    // 获胜：标记所有地雷
+                    for (let i = 0; i < rows; i++) {
+                        for (let j = 0; j < cols; j++) {
+                            if (state.minesweeper.board[i][j] === 'M' && !state.minesweeper.flagged[i][j]) {
+                                const cell = elements.minesweeper.board.querySelector(`[data-row="${i}"][data-col="${j}"]`);
+                                cell.innerHTML = '<i class="fa fa-flag text-green-600"></i>';
+                                utils.removeClass(cell, 'bg-gray-400 hover:bg-gray-300');
+                                utils.addClass(cell, 'bg-gray-200 cursor-default');
+                            }
+                        }
+                    }
+                    
+                    // 保存记录
+                    const difficulty = state.minesweeper.difficulty;
+                    if (!state.gameStats.minesweeper[difficulty] || 
+                        state.minesweeper.seconds < state.gameStats.minesweeper[difficulty]) {
+                        state.gameStats.minesweeper[difficulty] = state.minesweeper.seconds;
+                        utils.saveUserData();
+                        home.updateStats();
+                    }
+                    
+                    // 显示胜利消息
+                    utils.showGameModal(
+                        '恭喜你赢了！', 
+                        `用时: ${utils.formatTime(state.minesweeper.seconds)}`, 
+                        true, 
+                        'minesweeper'
+                    );
+                } else {
+                    // 失败：显示所有地雷
+                    for (let i = 0; i < rows; i++) {
+                        for (let j = 0; j < cols; j++) {
+                            if (state.minesweeper.board[i][j] === 'M' && !state.minesweeper.flagged[i][j]) {
+                                const cell = elements.minesweeper.board.querySelector(`[data-row="${i}"][data-col="${j}"]`);
+                                cell.innerHTML = '<i class="fa fa-bomb text-danger"></i>';
+                                utils.removeClass(cell, 'bg-gray-400 hover:bg-gray-300');
+                                utils.addClass(cell, 'bg-gray-200 cursor-default');
+                            } else if (state.minesweeper.flagged[i][j] && state.minesweeper.board[i][j] !== 'M') {
+                                // 错误标记
+                                const cell = elements.minesweeper.board.querySelector(`[data-row="${i}"][data-col="${j}"]`);
+                                cell.innerHTML = '<i class="fa fa-times text-danger"></i>';
+                                utils.removeClass(cell, 'bg-gray-400 hover:bg-gray-300');
+                                utils.addClass(cell, 'bg-gray-200 cursor-default');
+                            }
+                        }
+                    }
+                    
+                    // 显示失败消息
+                    utils.showGameModal(
+                        '游戏结束', 
+                        '很遗憾，你踩到了地雷', 
+                        false, 
+                        'minesweeper'
+                    );
+                }
+            }
+        };
+
+        // 纸牌游戏功能
+        const solitaire = {
+            // 初始化游戏
+            init: () => {
+                // 重置游戏状态
+                state.solitaire = {
+                    ...state.solitaire,
+                    deck: [],
+                    stockPile: [],
+                    wastePile: [],
+                    foundationPiles: [[], [], [], []],
+                    tableauPiles: [[], [], [], [], [], [], []],
+                    gameStarted: false,
+                    gameOver: false,
+                    win: false,
+                    timer: null,
+                    seconds: 0,
+                    moves: 0,
+                    selectedCard: null
+                };
+                
+                // 重置UI
+                elements.solitaire.timer.textContent = '00:00';
+                elements.solitaire.moves.textContent = '0';
+                elements.solitaire.wastePile.innerHTML = '';
+                
+                // 清空目标堆
+                elements.solitaire.foundationPiles.forEach(pile => {
+                    pile.innerHTML = '';
+                });
+                
+                // 清空tableau
+                elements.solitaire.tableau.innerHTML = '';
+                
+                // 创建牌组
+                solitaire.createDeck();
+                
+                // 发牌
+                solitaire.dealCards();
+                
+                // 开始游戏
+                state.solitaire.gameStarted = true;
+                solitaire.startTimer();
+            },
+            
+            // 创建牌组
+            createDeck: () => {
+                const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+                const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+                
+                // 创建所有牌
+                suits.forEach(suit => {
+                    values.forEach((value, index) => {
+                        state.solitaire.deck.push({
+                            suit,
+                            value,
+                            rank: index + 1,
+                            faceUp: false
+                        });
+                    });
+                });
+                
+                // 洗牌
+                solitaire.shuffleDeck();
+            },
+            
+            // 洗牌
+            shuffleDeck: () => {
+                for (let i = state.solitaire.deck.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [state.solitaire.deck[i], state.solitaire.deck[j]] = [state.solitaire.deck[j], state.solitaire.deck[i]];
+                }
+                
+                // 将洗好的牌放入牌堆
+                state.solitaire.stockPile = [...state.solitaire.deck];
+            },
+            
+            // 发牌
+            dealCards: () => {
+                // 给7个 tableau 堆发牌
+                for (let i = 0; i < 7; i++) {
+                    // 创建 tableau 堆元素
+                    const pileElement = document.createElement('div');
+                    pileElement.className = 'tableau-pile w-16 flex flex-col items-center';
+                    pileElement.dataset.index = i;
+                    
+                    // 为每个堆发牌
+                    for (let j = 0; j <= i; j++) {
+                        const card = state.solitaire.stockPile.pop();
+                        
+                        // 最后一张牌面朝上
+                        if (j === i) {
+                            card.faceUp = true;
+                        }
+                        
+                        state.solitaire.tableauPiles[i].push(card);
+                        
+                        // 创建牌元素
+                        const cardElement = solitaire.createCardElement(card, i, state.solitaire.tableauPiles[i].length - 1);
+                        pileElement.appendChild(cardElement);
+                    }
+                    
+                    elements.solitaire.tableau.appendChild(pileElement);
+                }
+            },
+            
+            // 创建牌元素
+            createCardElement: (card, pileIndex, cardIndex) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = `card w-16 h-24 rounded-md shadow-md absolute transition-all duration-200 cursor-pointer`;
+                
+                // 设置位置（对于tableau中的牌）
+                if (pileIndex !== undefined && cardIndex !== undefined) {
+                    cardElement.style.bottom = `${cardIndex * 30}px`;
+                    cardElement.dataset.pile = 'tableau';
+                    cardElement.dataset.pileIndex = pileIndex;
+                    cardElement.dataset.cardIndex = cardIndex;
+                }
+                
+                // 牌面朝上或朝下
+                if (card.faceUp) {
+                    // 牌面颜色（红桃和方块为红色，黑桃和梅花为黑色）
+                    const color = card.suit === 'hearts' || card.suit === 'diamonds' ? 'text-red-600' : 'text-black';
+                    
+                    cardElement.classList.add('bg-white', 'border', 'border-gray-300');
+                    cardElement.innerHTML = `
+                        <div class="absolute top-1 left-1 text-xs ${color}">
+                            <div>${card.value}</div>
+                            <div><i class="fa fa-${card.suit}"></i></div>
+                        </div>
+                        <div class="absolute bottom-1 right-1 text-xs transform rotate-180 ${color}">
+                            <div>${card.value}</div>
+                            <div><i class="fa fa-${card.suit}"></i></div>
+                        </div>
+                    `;
+                    
+                    // 添加点击事件
+                    cardElement.addEventListener('click', () => solitaire.selectCard(cardElement, card));
+                } else {
+                    cardElement.classList.add('bg-blue-600', 'border', 'border-blue-700');
+                    cardElement.innerHTML = `
+                        <div class="w-full h-full flex items-center justify-center">
+                            <i class="fa fa-diamond text-white/30 text-xl"></i>
+                        </div>
+                    `;
+                }
+                
+                return cardElement;
+            },
+            
+            // 开始计时器
+            startTimer: () => {
+                // 清除现有计时器
+                if (state.solitaire.timer) {
+                    clearInterval(state.solitaire.timer);
+                }
+                
+                // 设置新计时器
+                state.solitaire.timer = setInterval(() => {
+                    state.solitaire.seconds++;
+                    elements.solitaire.timer.textContent = utils.formatTime(state.solitaire.seconds);
+                }, 1000);
+            },
+            
+            // 停止计时器
+            stopTimer: () => {
+                if (state.solitaire.timer) {
+                    clearInterval(state.solitaire.timer);
+                    state.solitaire.timer = null;
+                }
+            },
+            
+            // 选择牌
+            selectCard: (cardElement, card) => {
+                // 如果已经选择了这张牌，取消选择
+                if (state.solitaire.selectedCard === cardElement) {
+                    solitaire.deselectCard();
+                    return;
+                }
+                
+                // 检查这张牌是否可以被选择
+                if (!solitaire.canSelectCard(cardElement, card)) {
+                    return;
+                }
+                
+                // 取消之前的选择
+                solitaire.deselectCard();
+                
+                // 选中当前牌
+                state.solitaire.selectedCard = cardElement;
+                utils.addClass(cardElement, 'ring-2', 'ring-primary', 'scale-105');
+            },
+            
+            // 取消选择牌
+            deselectCard: () => {
+                if (state.solitaire.selectedCard) {
+                    utils.removeClass(state.solitaire.selectedCard, 'ring-2', 'ring-primary', 'scale-105');
+                    state.solitaire.selectedCard = null;
+                }
+            },
+            
+            // 检查牌是否可以被选择
+            canSelectCard: (cardElement, card) => {
+                // 只有正面朝上的牌可以被选择
+                if (!card.faceUp) {
+                    return false;
+                }
+                
+                // 检查是否是 tableau 堆中最上面的牌或可以移动的牌组的最上面一张
+                if (cardElement.dataset.pile === 'tableau') {
+                    const pileIndex = parseInt(cardElement.dataset.pileIndex);
+                    const cardIndex = parseInt(cardElement.dataset.cardIndex);
+                    const pile = state.solitaire.tableauPiles[pileIndex];
+                    
+                    // 必须是堆中最上面的牌，或者是可以移动的牌组的最上面一张
+                    return cardIndex === pile.length - 1 || solitaire.isValidSequence(pileIndex, cardIndex);
+                }
+                
+                // 废牌堆的牌可以被选择
+                if (cardElement.dataset.pile === 'waste') {
+                    return true;
+                }
+                
+                // 目标堆的牌只能被移动到其他目标堆（按规则）
+                if (cardElement.dataset.pile === 'foundation') {
+                    return true;
+                }
+                
+                return false;
+            },
+            
+            // 检查是否是有效的序列（可以一起移动）
+            isValidSequence: (pileIndex, cardIndex) => {
+                const pile = state.solitaire.tableauPiles[pileIndex];
+                
+                // 从cardIndex开始检查是否是一个有效的递减序列，且红黑交替
+                for (let i = cardIndex; i < pile.length - 1; i++) {
+                    const current = pile[i];
+                    const next = pile[i + 1];
+                    
+                    // 检查是否递减1
+                    if (current.rank - next.rank !== 1) {
+                        return false;
+                    }
+                    
+                    // 检查是否红黑交替
+                    const currentIsRed = current.suit === 'hearts' || current.suit === 'diamonds';
+                    const nextIsRed = next.suit === 'hearts' || next.suit === 'diamonds';
+                    
+                    if (currentIsRed === nextIsRed) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            },
+            
+            // 从牌堆发牌
+            drawFromStock: () => {
+                // 如果牌堆为空，将废牌堆移回牌堆
+                if (state.solitaire.stockPile.length === 0) {
+                    // 将废牌堆的牌翻转并移回牌堆
+                    while (state.solitaire.wastePile.length > 0) {
+                        const card = state.solitaire.wastePile.pop();
+                        card.faceUp = false;
+                        state.solitaire.stockPile.push(card);
+                    }
+                    elements.solitaire.wastePile.innerHTML = '';
+                    return;
+                }
+                
+                // 从牌堆取一张牌到废牌堆
+                const card = state.solitaire.stockPile.pop();
+                card.faceUp = true;
+                state.solitaire.wastePile.push(card);
+                
+                // 更新废牌堆UI
+                elements.solitaire.wastePile.innerHTML = '';
+                const cardElement = solitaire.createCardElement(card);
+                cardElement.dataset.pile = 'waste';
+                cardElement.dataset.cardIndex = state.solitaire.wastePile.length - 1;
+                elements.solitaire.wastePile.appendChild(cardElement);
+                
+                // 增加步数
+                solitaire.incrementMoves();
+            },
+            
+            // 增加步数
+            incrementMoves: () => {
+                state.solitaire.moves++;
+                elements.solitaire.moves.textContent = state.solitaire.moves;
+            },
+            
+            // 检查游戏是否胜利
+            checkWin: () => {
+                // 胜利条件：4个目标堆都有13张牌（从A到K）
+                const totalCardsInFoundations = state.solitaire.foundationPiles.reduce(
+                    (total, pile) => total + pile.length, 0
+                );
+                
+                if (totalCardsInFoundations === 52) {
+                    state.solitaire.gameOver = true;
+                    state.solitaire.win = true;
+                    solitaire.stopTimer();
+                    
+                    // 更新统计数据
+                    state.gameStats.solitaire.wins++;
+                    
+                    // 检查是否是最少步数
+                    if (!state.gameStats.solitaire.minMoves || 
+                        state.solitaire.moves < state.gameStats.solitaire.minMoves) {
+                        state.gameStats.solitaire.minMoves = state.solitaire.moves;
+                    }
+                    
+                    // 检查是否是最短时间
+                    if (!state.gameStats.solitaire.minTime || 
+                        state.solitaire.seconds < state.gameStats.solitaire.minTime) {
+                        state.gameStats.solitaire.minTime = state.solitaire.seconds;
+                    }
+                    
+                    utils.saveUserData();
+                    home.updateStats();
+                    
+                    // 显示胜利消息
+                    utils.showGameModal(
+                        '恭喜你赢了！', 
+                        `步数: ${state.solitaire.moves} | 用时: ${utils.formatTime(state.solitaire.seconds)}`, 
+                        true, 
+                        'solitaire'
+                    );
+                }
+            },
+            
+            // 提供提示
+            showHint: () => {
+                // 简单提示逻辑：寻找可以移动到目标堆的牌
+                for (let i = 0; i < state.solitaire.tableauPiles.length; i++) {
+                    const pile = state.solitaire.tableauPiles[i];
+                    if (pile.length === 0) continue;
+                    
+                    const topCard = pile[pile.length - 1];
+                    if (!topCard.faceUp) continue;
+                    
+                    // 检查是否可以移动到目标堆
+                    for (let j = 0; j < state.solitaire.foundationPiles.length; j++) {
+                        const foundation = state.solitaire.foundationPiles[j];
+                        
+                        // A可以移动到空的目标堆
+                        if (topCard.rank === 1 && foundation.length === 0) {
+                            // 高亮显示这张牌
+                            const cardElement = document.querySelector(`[data-pile="tableau"][data-pile-index="${i}"][data-card-index="${pile.length - 1}"]`);
+                            if (cardElement) {
+                                utils.addClass(cardElement, 'animate-pulse', 'ring-2', 'ring-secondary');
+                                setTimeout(() => {
+                                    utils.removeClass(cardElement, 'animate-pulse', 'ring-2', 'ring-secondary');
+                                }, 2000);
+                                return;
+                            }
+                        } 
+                        // 同花色且比目标堆顶牌大1
+                        else if (foundation.length > 0 && 
+                                 topCard.suit === foundation[foundation.length - 1].suit && 
+                                 topCard.rank === foundation[foundation.length - 1].rank + 1) {
+                            // 高亮显示这张牌
+                            const cardElement = document.querySelector(`[data-pile="tableau"][data-pile-index="${i}"][data-card-index="${pile.length - 1}"]`);
+                            if (cardElement) {
+                                utils.addClass(cardElement, 'animate-pulse', 'ring-2', 'ring-secondary');
+                                setTimeout(() => {
+                                    utils.removeClass(cardElement, 'animate-pulse', 'ring-2', 'ring-secondary');
+                                }, 2000);
+                                return;
+                            }
+                        }
+                    }
+                }
+                
+                // 检查废牌堆的牌是否可以移动到目标堆
+                if (state.solitaire.wastePile.length > 0) {
+                    const topCard = state.solitaire.wastePile[state.solitaire.wastePile.length - 1];
+                    
+                    for (let j = 0; j < state.solitaire.foundationPiles.length; j++) {
+                        const foundation = state.solitaire.foundationPiles[j];
+                        
+                        if (topCard.rank === 1 && foundation.length === 0) {
+                            // 高亮显示这张牌
+                            const cardElement = document.querySelector(`[data-pile="waste"]`);
+                            if (cardElement) {
+                                utils.addClass(cardElement, 'animate-pulse', 'ring-2', 'ring-secondary');
+                                setTimeout(() => {
+                                    utils.removeClass(cardElement, 'animate-pulse', 'ring-2', 'ring-secondary');
+                                }, 2000);
+                                return;
+                            }
+                        } else if (foundation.length > 0 && 
+                                 topCard.suit === foundation[foundation.length - 1].suit && 
+                                 topCard.rank === foundation[foundation.length - 1].rank + 1) {
+                            // 高亮显示这张牌
+                            const cardElement = document.querySelector(`[data-pile="waste"]`);
+                            if (cardElement) {
+                                utils.addClass(cardElement, 'animate-pulse', 'ring-2', 'ring-secondary');
+                                setTimeout(() => {
+                                    utils.removeClass(cardElement, 'animate-pulse', 'ring-2', 'ring-secondary');
+                                }, 2000);
+                                return;
+                            }
+                        }
+                    }
+                }
+                
+                utils.showToast('没有找到可移动的牌', 'info');
+            }
+        };
+
+        // 初始化所有事件监听
+        const initEventListeners = () => {
+            // 导航链接事件
+            elements.navLinks.home.addEventListener('click', (e) => {
+                e.preventDefault();
+                utils.switchView('home');
+            });
+            
+            elements.navLinks.minesweeper.addEventListener('click', (e) => {
+                e.preventDefault();
+                utils.switchView('minesweeper');
+            });
+            
+            elements.navLinks.solitaire.addEventListener('click', (e) => {
+                e.preventDefault();
+                utils.switchView('solitaire');
+            });
+            
+            elements.navLinks.logout.addEventListener('click', auth.logout);
+            
+            // 移动菜单事件
+            elements.navLinks.mobileMenuBtn.addEventListener('click', () => {
+                elements.navLinks.mobileMenu.classList.toggle('hidden');
+            });
+            
+            elements.navLinks.mobileHome.addEventListener('click', (e) => {
+                e.preventDefault();
+                utils.switchView('home');
+            });
+            
+            elements.navLinks.mobileMinesweeper.addEventListener('click', (e) => {
+                e.preventDefault();
+                utils.switchView('minesweeper');
+            });
+            
+            elements.navLinks.mobileSolitaire.addEventListener('click', (e) => {
+                e.preventDefault();
+                utils.switchView('solitaire');
+            });
+            
+            elements.navLinks.mobileLogout.addEventListener('click', auth.logout);
+            
+            // 扫雷游戏事件
+            elements.minesweeper.backBtn.addEventListener('click', () => {
+                // 停止计时器
+                if (state.minesweeper.timer) {
+                    clearInterval(state.minesweeper.timer);
+                }
+                utils.switchView('home');
+            });
+            
+            elements.minesweeper.restartBtn.addEventListener('click', minesweeper.init);
+            
+            elements.minesweeper.difficultySelect.addEventListener('change', (e) => {
+                state.minesweeper.difficulty = e.target.value;
+                minesweeper.init();
+            });
+            
+            // 纸牌游戏事件
+            elements.solitaire.backBtn.addEventListener('click', () => {
+                // 停止计时器
+                if (state.solitaire.timer) {
+                    clearInterval(state.solitaire.timer);
+                }
+                utils.switchView('home');
+            });
+            
+            elements.solitaire.restartBtn.addEventListener('click', solitaire.init);
+            
+            elements.solitaire.hintBtn.addEventListener('click', solitaire.showHint);
+            
+            elements.solitaire.stockPile.addEventListener('click', solitaire.drawFromStock);
+            
+            // 游戏弹窗事件
+            elements.modal.closeBtn.addEventListener('click', () => {
+                utils.hideGameModal();
+                utils.switchView('home');
+            });
+            
+            elements.modal.restartBtn.addEventListener('click', () => {
+                const gameType = elements.modal.restartBtn.dataset.game;
+                utils.hideGameModal();
+                
+                if (gameType === 'minesweeper') {
+                    minesweeper.init();
+                    utils.switchView('minesweeper');
+                } else if (gameType === 'solitaire') {
+                    solitaire.init();
+                    utils.switchView('solitaire');
+                }
+            });
+            
+            // 窗口滚动事件（导航栏样式变化）
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 10) {
+                    utils.addClass(elements.navbar, 'py-2', 'shadow');
+                    utils.removeClass(elements.navbar, 'py-3');
+                } else {
+                    utils.addClass(elements.navbar, 'py-3');
+                    utils.removeClass(elements.navbar, 'py-2', 'shadow');
+                }
+            });
+        };
+
+        // 初始化应用
+        const initApp = () => {
+            // 隐藏加载动画，显示应用
+            setTimeout(() => {
+                elements.loader.style.opacity = '0';
+                setTimeout(() => {
+                    elements.loader.classList.add('hidden');
+                    elements.app.style.opacity = '1';
+                }, 500);
+            }, 800);
+            
+            // 加载用户数据
+            utils.loadUserData();
+            
+            // 初始化功能模块
+            auth.init();
+            home.init();
+            
+            // 初始化事件监听
+            initEventListeners();
+        };
+
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
